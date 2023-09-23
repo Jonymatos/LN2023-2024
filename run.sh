@@ -13,6 +13,8 @@ done
 # ############ CORE OF THE PROJECT  ############
 
 fstconcat compiled/mmm2mm.fst compiled/aux.fst > compiled/mix2numerical.fst
+fstconcat compiled/pt2en_aux.fst compiled/aux.fst > compiled/pt2en.fst
+fstinvert compiled/pt2en.fst > compiled/en2pt.fst
 
 
 
@@ -70,7 +72,7 @@ trans=n2text.fst
 echo "\n***********************************************************"
 echo "Testing 5 6 7 8  (output is a string  using 'syms-out.txt')"
 echo "***********************************************************"
-for w in 5 6 7 8; do
+for w in "5" "6" "7" "8"; do
     res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
                        fstcompose - compiled/$trans | fstshortestpath | fstproject --project_type=output |
                        fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
