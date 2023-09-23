@@ -31,17 +31,45 @@ for i in compiled/*.fst; do
    fstdraw --portrait --isymbols=syms.txt --osymbols=syms.txt $i | dot -Tpdf > images/$(basename $i '.fst').pdf
 done
 
+fst2word() {
+	awk '{if(NF>=3){printf("%s",$3)}}END{printf("\n")}'
+}
 
+#4 - tests the transducers with the students' 18th birthday
+dateMembers=("DEC/02/2018" "MAY/08/2019")
 
-# ############      3 different ways of testing     ############
-# ############ (you can use the one(s) you prefer)  ############
+#Testing with syms.txt as output
+FSTs=(mix2numerical.fst en2pt.fst)
+for i in "${FSTs[@]}"; do
+    echo "Testing $i:"
+    for w in $dateMembers; do
+        res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
+                           fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
+                           fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=syms.txt | fst2word)
+        echo "$w = $res"
+    done
+done
 
+#TODO Testing with ./scripts/syms-out.txt as output
+FSTs=(day.fst)
+for i in "${FSTs[@]}"; do
+    echo "Testing $i:"
+    for w in "1" "2" "3" "4"; do
+        res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
+                           fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
+                           fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
+        echo "$w = $res"
+    done
+done
+
+#TODO just to test date2text when it is ready
+: '
 #1 - generates files
 echo "\n***********************************************************"
 echo "Testing 4 (the output is a transducer: fst and pdf)"
 echo "***********************************************************"
 for w in compiled/t-*.fst; do
-    fstcompose $w compiled/n2text.fst | fstshortestpath | fstproject --project_type=output |
+    fstcompose $w compiled/date2text.fst | fstshortestpath | fstproject --project_type=output |
                   fstrmepsilon | fsttopsort > compiled/$(basename $i ".fst")-out.fst
 done
 for i in compiled/t-*-out.fst; do
@@ -49,34 +77,4 @@ for i in compiled/t-*-out.fst; do
    fstdraw --portrait --isymbols=syms.txt --osymbols=syms.txt $i | dot -Tpdf > images/$(basename $i '.fst').pdf
 done
 
-
-#2 - present the output as an acceptor
-echo "\n***********************************************************"
-echo "Testing 1 2 3 4 (output is a acceptor)"
-echo "***********************************************************"
-trans=n2text.fst
-echo "\nTesting $trans"
-for w in "1" "2" "3" "4"; do
-    echo "\t $w"
-    python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
-                     fstcompose - compiled/$trans | fstshortestpath | fstproject --project_type=output |
-                     fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=syms.txt
-done
-
-#3 - presents the output with the tokens concatenated (uses a different syms on the output)
-fst2word() {
-	awk '{if(NF>=3){printf("%s",$3)}}END{printf("\n")}'
-}
-
-trans=n2text.fst
-echo "\n***********************************************************"
-echo "Testing 5 6 7 8  (output is a string  using 'syms-out.txt')"
-echo "***********************************************************"
-for w in "5" "6" "7" "8"; do
-    res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
-                       fstcompose - compiled/$trans | fstshortestpath | fstproject --project_type=output |
-                       fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
-    echo "$w = $res"
-done
-
-echo "\nThe end"
+'
