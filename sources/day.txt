@@ -1,7 +1,13 @@
 0 1 0 eps
-0 1 2 twenty
 0 2 1 eps
-0 3 3 thirty
+0 3 2 eps
+0 4 3 eps
+0 0 4 fourth
+0 0 5 fifth
+0 0 6 sixth
+0 0 7 seventh
+0 0 8 eighth
+0 0 9 ninth
 1 1 1 first
 1 1 2 second
 1 1 3 third
@@ -21,8 +27,17 @@
 2 2 7 seventeenth	
 2 2 8 eighteenth
 2 2 9 nineteenth
-3 3 1 first
+3 3 0 twentieth
+3 5 eps twenty
+5 1 eps -
+4 4 0 thirtieth
+4 6 eps thirty
+6 7 eps -
+7 7 1 first
+0
 1
 2
 3
+4
+7
 
