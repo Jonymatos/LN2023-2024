@@ -1,43 +1,45 @@
-0 1 0 eps
-0 2 1 eps
-0 3 2 eps
-0 4 3 eps
-0 0 4 fourth
-0 0 5 fifth
-0 0 6 sixth
-0 0 7 seventh
-0 0 8 eighth
-0 0 9 ninth
-1 1 1 first
-1 1 2 second
-1 1 3 third
-1 1 4 fourth
-1 1 5 fifth			
-1 1 6 sixth			
-1 1 7 seventh		
-1 1 8 eighth
-1 1 9 ninth
-2 2 0 tenth			
-2 2 1 eleventh		
-2 2 2 twelfth		
-2 2 3 thirteenth	
-2 2 4 fourteenth	
-2 2 5 fifteenth	
-2 2 6 sixteenth	
-2 2 7 seventeenth	
-2 2 8 eighteenth
-2 2 9 nineteenth
-3 3 0 twentieth
-3 5 eps twenty
-5 1 eps -
-4 4 0 thirtieth
-4 6 eps thirty
-6 7 eps -
-7 7 1 first
-0
-1
-2
-3
-4
-7
+0 0 0 eps
+0 1 1 eps
+0 4 2 eps
+0 5 3 eps
+0 14 eps eps
 
+1 3 eps first
+1 3 0 tenth
+1 3 1 eleventh
+1 3 2 twelfth
+1 3 3 thirteenth
+1 3 4 fourteenth
+1 3 5 fifteenth
+1 3 6 sixteenth
+1 3 7 seventeenth
+1 3 8 eighteenth
+1 3 9 nineteenth
+
+4 11 0 twentieth
+4 11 eps second
+4 8 eps twenty
+8 14 eps -
+
+14 15 1 first
+14 15 2 second
+14 15 3 third
+14 15 4 fourth
+14 15 5 fifth
+14 15 6 sixth
+14 15 7 seventh
+14 15 8 eighth
+14 15 9 ninth
+
+5 6 0 thirteenth
+5 6 eps third
+5 16 eps thirty
+16 17 eps -
+17 18 1 first
+17 18 2 second
+
+3
+6
+11
+15
+18
