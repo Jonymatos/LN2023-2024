@@ -17,10 +17,14 @@ fstconcat compiled/pt2en_aux.fst compiled/aux.fst > compiled/pt2en.fst
 fstinvert compiled/pt2en.fst > compiled/en2pt.fst
 
 # datenum2text
-fstconcat compiled/month.fst compiled/aux_slash.fst > compiled/datenum2text_aux1.fst
-fstconcat compiled/datenum2text_aux1.fst compiled/day.fst > compiled/datenum2text_aux2.fst
-fstconcat compiled/datenum2text_aux2.fst compiled/aux_comma.fst > compiled/datenum2text_aux3.fst
-fstconcat compiled/datenum2text_aux3.fst compiled/year.fst > compiled/datenum2text.fst
+fstconcat compiled/month.fst compiled/aux_slash.fst |
+fstconcat - compiled/day.fst |
+fstconcat - compiled/aux_comma.fst |
+fstconcat - compiled/year.fst > compiled/datenum2text.fst
+
+# mix2text
+fstcompose compiled/pt2en.fst compiled/mix2numerical.fst | 
+fstcompose - compiled/datenum2text.fst > compiled/mix2text.fst
 
 
 
@@ -68,10 +72,10 @@ for i in "${FSTs[@]}"; do
     done
 done
 
-FSTs=(datenum2text.fst)
+FSTs=(mix2text.fst)
 for i in "${FSTs[@]}"; do
     echo "Testing $i:"
-    for w in "05/15/2055" "12/15/2055"; do
+    for w in "MAI/15/2055" "MAY/15/2055"; do
         res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
                            fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
                            fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
