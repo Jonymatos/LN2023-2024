@@ -24,7 +24,15 @@ fstconcat - compiled/year.fst > compiled/datenum2text.fst
 
 # mix2text
 fstcompose compiled/pt2en.fst compiled/mix2numerical.fst | 
-fstcompose - compiled/datenum2text.fst > compiled/mix2text.fst
+fstcompose - compiled/datenum2text.fst > compiled/mix2text1.fst
+
+fstcompose compiled/en2pt.fst compiled/mix2numerical.fst | 
+fstcompose - compiled/datenum2text.fst > compiled/mix2text2.fst
+
+fstunion compiled/mix2text1.fst compiled/mix2text2.fst > compiled/mix2text.fst
+
+# date2text
+fstunion compiled/mix2text.fst compiled/datenum2text.fst > compiled/date2text.fst
 
 
 
@@ -60,11 +68,21 @@ for i in "${FSTs[@]}"; do
     done
 done
 
-#TODO Testing with ./scripts/syms-out.txt as output
 FSTs=(day.fst month.fst)
 for i in "${FSTs[@]}"; do
     echo "Testing $i:"
     for w in "1" "02" "03" "12"; do
+        res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
+                           fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
+                           fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
+        echo "$w = $res"
+    done
+done
+
+FSTs=(datenum2text.fst)
+for i in "${FSTs[@]}"; do
+    echo "Testing $i:"
+    for w in "09/15/2055" "12/2/2018" "05/08/2019"; do
         res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
                            fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
                            fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
@@ -84,18 +102,17 @@ for i in "${FSTs[@]}"; do
 done
 
 #TODO just to test date2text when it is ready
-: '
+
 #1 - generates files
 echo "\n***********************************************************"
 echo "Testing 4 (the output is a transducer: fst and pdf)"
 echo "***********************************************************"
 for w in compiled/t-*.fst; do
     fstcompose $w compiled/date2text.fst | fstshortestpath | fstproject --project_type=output |
-                  fstrmepsilon | fsttopsort > compiled/$(basename $i ".fst")-out.fst
+                  fstrmepsilon | fsttopsort > compiled/$(basename $w ".fst")-out.fst
 done
 for i in compiled/t-*-out.fst; do
-	echo "Creating image: images/$(basename $i '.fst').pdf"
-   fstdraw --portrait --isymbols=syms.txt --osymbols=syms.txt $i | dot -Tpdf > images/$(basename $i '.fst').pdf
+   echo "Creating image: images/$(basename $i '.fst').pdf"
+   fstdraw --portrait --isymbols=syms.txt --osymbols=./scripts/syms-out.txt $i | dot -Tpdf > images/$(basename $i '.fst').pdf
 done
 
-'
