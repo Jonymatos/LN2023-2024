@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 mkdir -p compiled images
 
@@ -16,6 +16,11 @@ fstconcat compiled/mmm2mm.fst compiled/aux.fst > compiled/mix2numerical.fst
 fstconcat compiled/pt2en_aux.fst compiled/aux.fst > compiled/pt2en.fst
 fstinvert compiled/pt2en.fst > compiled/en2pt.fst
 
+# datenum2text
+fstconcat compiled/month.fst compiled/date2enum_aux1.fst > compiled/date2enum_aux3.fst
+fstconcat compiled/date2enum_aux3.fst compiled/day.fst > compiled/date2enum_aux4.fst
+fstconcat compiled/date2enum_aux4.fst compiled/date2enum_aux2.fst > compiled/date2enum_aux5.fst
+fstconcat compiled/date2enum_aux5.fst compiled/year.fst > compiled/datenum2text.fst
 
 
 
@@ -51,10 +56,21 @@ for i in "${FSTs[@]}"; do
 done
 
 #TODO Testing with ./scripts/syms-out.txt as output
-FSTs=(day.fst)
+FSTs=(day.fst month.fst)
 for i in "${FSTs[@]}"; do
     echo "Testing $i:"
-    for w in "1" "2" "3" "4"; do
+    for w in "1" "02" "03" "12"; do
+        res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
+                           fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
+                           fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
+        echo "$w = $res"
+    done
+done
+
+FSTs=(datenum2text.fst)
+for i in "${FSTs[@]}"; do
+    echo "Testing $i:"
+    for w in "09/15/2055"; do
         res=$(python3 ./scripts/word2fst.py $w | fstcompile --isymbols=syms.txt --osymbols=syms.txt | fstarcsort |
                            fstcompose - compiled/$i | fstshortestpath | fstproject --project_type=output |
                            fstrmepsilon | fsttopsort | fstprint --acceptor --isymbols=./scripts/syms-out.txt | fst2word)
