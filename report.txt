@@ -1,0 +1,25 @@
+Project done by:
+João Rui Vargas de Matos - nº 95610
+Gonçalo Goulart Oliveira - nº 95582
+
+Both members contributed equally to the project (i.e. 50% each).
+Joao Rui Vargas de Matos wrote the FSTs from tasks a. b. and colabored with Gonçalo Goulart Oliveira in the FSTs from task d. and made the necessary changes of the script run.sh.
+Gonçalo Goulart Oliveira wrote the FSTs from task c. and colabored with Joao Rui Vargas de Matos in the FSTs from task d.
+
+In order to write the mix2numerical.fst, we wrote an auxiliary transducer to check if the remaining symbols that were not parsed on mmmm2mm.fst are valid, named aux.fst that does produce the output the same as in the input, so we could use the operation fstconcat later.
+
+The same logic was also applied on pt2en.fst, an auxiliary FST was used named pt2en_aux just to change to the desired language of the output, so we could use the operation fstconcat later.
+
+After we have the pt2en.fst, we inversed the translation of the months by using the operation fstinverse to create the en2pt.fst, without having to write it from scratch.
+
+The days of the month can start with either a 0/nothing (1-9), a 2 (20-29), or a 3 (30-31). Therefore, day.fst begins by checking if the input starts with a 0, nothing (eps), 2, or 3. If it reads a 0 or an eps, it refers to digits from 1 to 9. If it reads a 2, it covers digits 2, 20, and 21-29. If it reads a 3, it applies the same logic as when the input starts with a 2.
+
+For the months, month.fst follows a similar logic as day.fst. It starts by reading the first digit, which could either be a 0/nothing or a 1 since there are only 12 months. Then, it checks the second digit to determine the specific month.
+
+The transducer year.fst begins by writing "two thousand and" to the output since dates range from 2000 to 2099. It then checks the last two digits, just like the previous transducers.
+
+The transducer datenum2text.fst concatenates the transducers month.fst, day.fst, and year.fst respectively, with each transducer separated by another transducer that reads the slashes ("/") in the input. The first slash is replaced with a blank space, and the second is replaced with a comma. Transducers aux_slash and aux_comma are created to perform this task and are later concatenated with the other three transducers to create the final output in datenum2text.fst.
+
+To create the transducer mix2date.fst we used the operation fstcompose mix2numerical.fst with datenum2text.fst, since the output of mix2numerical.fst is the input of datenum2text.fst.
+
+Finally, to create date2text.fst we used the operation fstunion with mix2date.fst and datenum2text.fst, so the FST could accept the initial input of the date in numerical format or mixed format.
