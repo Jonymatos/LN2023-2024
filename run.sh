@@ -33,7 +33,6 @@ fstcompose compiled/mix2numerical.fst compiled/datenum2text.fst > compiled/mix2t
 # date2text
 fstunion compiled/mix2text.fst compiled/datenum2text.fst > compiled/date2text.fst
 
-
 # ############ generate PDFs  ############
 echo "Starting to generate PDFs"
 for i in compiled/*.fst; do
