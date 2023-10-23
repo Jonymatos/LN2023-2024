@@ -6,13 +6,15 @@ from sklearn.metrics import accuracy_score
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk, re
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split, KFold
 from custom_stop_words import chicago_hotel_names_regrex
 from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
+import numpy as np
 
 ROUNDS = 100
 
-df = pd.read_csv("train.txt", sep="\t", names=["label", "review"])
+df = pd.read_csv("proj2/train.txt", sep="\t", names=["label", "review"])
 
 mapping = {"TRUTHFULPOSITIVE": 0, "TRUTHFULNEGATIVE": 1, "DECEPTIVEPOSITIVE": 2, "DECEPTIVENEGATIVE": 3}
 inv_mapping = {v: k for k, v in mapping.items()}
@@ -51,16 +53,41 @@ clf = Pipeline([
     LRC
 ])
 
-accuracy_scores = []
+accuracy_scores = 0
+aggregate_cm = np.zeros((4, 4)) # 4x4 confusion matrix
+k = 10
+kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)  # or KFold(...)
+
 
 for i in range(ROUNDS):
     X_train, X_test, y_train, y_test = train_test_split(df.review, df.label, test_size=0.1, shuffle=True, random_state=i)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
     clf_accuracy = accuracy_score(y_test, y_pred)
-    accuracy_scores.append(clf_accuracy)
+    accuracy_scores += clf_accuracy
+    aggregate_cm += cm
     #print("Round: ", i, " Accuracy: ", clf_accuracy)
 
-print("Accuracy: ", sum(accuracy_scores) / len(accuracy_scores))
+"""
+for train_index, test_index in kf.split(df.review, df.label):
+    X_train, X_test = df.review.iloc[train_index], df.review.iloc[test_index]
+    y_train, y_test = df.label.iloc[train_index], df.label.iloc[test_index]
+    
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    
+    cm = confusion_matrix(y_test, y_pred)
+    clf_accuracy = accuracy_score(y_test, y_pred)
+    accuracy_scores += clf_accuracy
+    aggregate_cm += cm
+"""
+
+# Average the confusion matrix over k-folds
+avg_cm = aggregate_cm / ROUNDS # or k instead of rounds if using k-fold
+
+print("Averaged Confusion Matrix:")
+print(avg_cm)
+print("Accuracy: ", accuracy_scores / ROUNDS) # or k instead of rounds if using k-fold
 
 

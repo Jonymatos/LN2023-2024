@@ -5,7 +5,7 @@ from transformers import DistilBertTokenizer, DistilBertForSequenceClassificatio
 from datasets import Dataset
 import torch
 
-data = pd.read_csv("train.txt", sep="\t", names=["label", "review"])
+data = pd.read_csv("proj2/train_split.txt", sep="\t", names=["label", "review"])
 
 mapping = {"TRUTHFULPOSITIVE": 0, "TRUTHFULNEGATIVE": 1, "DECEPTIVEPOSITIVE": 2, "DECEPTIVENEGATIVE": 3}
 inverse_mapping = {v: k for k, v in mapping.items()}
@@ -30,7 +30,7 @@ train_dataset = hg_dataset.map(tokenize, batched=True)
 
 training_args = TrainingArguments(
     output_dir="./results",
-    num_train_epochs=1,
+    num_train_epochs=3,
     per_device_train_batch_size=16,
     logging_dir="./logs"
 )
