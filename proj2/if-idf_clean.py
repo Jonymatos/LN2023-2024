@@ -39,7 +39,8 @@ class TextPreprocessor(BaseEstimator, TransformerMixin):
         return X_out
 
 # Load data and preprocess labels
-df = pd.read_csv("proj2/train.txt", sep="\t", names=["label", "review"])
+data_file = ""
+df = pd.read_csv(data_file, sep="\t", names=["label", "review"])
 mapping = {"TRUTHFULPOSITIVE": 0, "TRUTHFULNEGATIVE": 1, "DECEPTIVEPOSITIVE": 2, "DECEPTIVENEGATIVE": 3}
 df.label = df.label.map(mapping)
 
@@ -129,4 +130,6 @@ def evaluate_file(filename,fileout):
 if __name__ == "__main__":
     #crossValidation()
     traintestsplitmethod()
-    #evaluate_file("proj2/test_just_reviews.txt","proj2/results.txt")
+    in_file = ""
+    out_file = ""
+    #evaluate_file(in_file, out_file)
