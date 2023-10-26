@@ -28,6 +28,8 @@ stop_words.remove("not")
 stop_words.remove("but")
 stop_words.remove("only")
 stop_words.remove("no")
+stop_words.remove("didn't")
+stop_words.remove("wasn't")
 stop_words.remove("against")
 stop_words.append("chicago")
 stop_words.append("hotel")
@@ -55,8 +57,6 @@ clf = Pipeline([
 
 accuracy_scores = 0
 aggregate_cm = np.zeros((4, 4)) # 4x4 confusion matrix
-k = 10
-kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)  # or KFold(...)
 
 
 for i in range(ROUNDS):
@@ -67,27 +67,13 @@ for i in range(ROUNDS):
     clf_accuracy = accuracy_score(y_test, y_pred)
     accuracy_scores += clf_accuracy
     aggregate_cm += cm
-    #print("Round: ", i, " Accuracy: ", clf_accuracy)
-
-"""
-for train_index, test_index in kf.split(df.review, df.label):
-    X_train, X_test = df.review.iloc[train_index], df.review.iloc[test_index]
-    y_train, y_test = df.label.iloc[train_index], df.label.iloc[test_index]
-    
-    clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    
-    cm = confusion_matrix(y_test, y_pred)
-    clf_accuracy = accuracy_score(y_test, y_pred)
-    accuracy_scores += clf_accuracy
-    aggregate_cm += cm
-"""
+    print("Round: ", i, " Accuracy: ", clf_accuracy)
 
 # Average the confusion matrix over k-folds
-avg_cm = aggregate_cm / ROUNDS # or k instead of rounds if using k-fold
+avg_cm = aggregate_cm / ROUNDS
 
 print("Averaged Confusion Matrix:")
 print(avg_cm)
-print("Accuracy: ", accuracy_scores / ROUNDS) # or k instead of rounds if using k-fold
+print("Accuracy: ", accuracy_scores / ROUNDS)
 
 

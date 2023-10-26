@@ -51,39 +51,82 @@ pipeline = Pipeline([
     ('clf', LogisticRegression(solver="liblinear", multi_class="auto"))
 ])
 
-param_grid = {
-    'clf__C': [0.001, 0.01, 0.1, 1, 10, 100],
-    'clf__penalty': ['l1', 'l2']
-}
+def crossValidation(k=10):
+    param_grid = {
+        'clf__C': [0.001, 0.01, 0.1, 1, 10, 100],
+        'clf__penalty': ['l1', 'l2']
+    }
 
-grid_search = GridSearchCV(pipeline, param_grid, cv=5, scoring='accuracy', n_jobs=-1)
-grid_search.fit(df.review, df.label)
-print("Best parameters found: ", grid_search.best_params_)
-print("Best cross-validation accuracy: {:.2f}".format(grid_search.best_score_))
+    grid_search = GridSearchCV(pipeline, param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+    grid_search.fit(df.review, df.label)
+    print("Best parameters found: ", grid_search.best_params_)
+    print("Best cross-validation accuracy: {:.2f}".format(grid_search.best_score_))
 
-# K-fold cross-validation with confusion matrix
-k = 10
-kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
-aggregate_cm = np.zeros((4, 4))
-total_accuracy = 0
+    # K-fold cross-validation with confusion matrix
+    kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+    aggregate_cm = np.zeros((4, 4))
+    total_accuracy = 0
 
-for train_index, test_index in kf.split(df.review, df.label):
-    X_train, X_test = df.review.iloc[train_index], df.review.iloc[test_index]
-    y_train, y_test = df.label.iloc[train_index], df.label.iloc[test_index]
+    for train_index, test_index in kf.split(df.review, df.label):
+        X_train, X_test = df.review.iloc[train_index], df.review.iloc[test_index]
+        y_train, y_test = df.label.iloc[train_index], df.label.iloc[test_index]
     
-    grid_search.best_estimator_.fit(X_train, y_train)
-    y_pred = grid_search.best_estimator_.predict(X_test)
+        grid_search.best_estimator_.fit(X_train, y_train)
+        y_pred = grid_search.best_estimator_.predict(X_test)
     
-    cm = confusion_matrix(y_test, y_pred)
-    aggregate_cm += cm
+        cm = confusion_matrix(y_test, y_pred)
+        aggregate_cm += cm
     
-    accuracy = accuracy_score(y_test, y_pred)
-    total_accuracy += accuracy
-    print(f"Fold Accuracy: {accuracy:.2f}")
+        accuracy = accuracy_score(y_test, y_pred)
+        total_accuracy += accuracy
+        print(f"Fold Accuracy: {accuracy:.2f}")
 
-avg_cm = aggregate_cm / k
-avg_accuracy = total_accuracy / k
+    avg_cm = aggregate_cm / k
+    avg_accuracy = total_accuracy / k
 
-print("Averaged Confusion Matrix:")
-print(avg_cm)
-print(f"\nAverage Accuracy over {k} folds: {avg_accuracy:.2f}")
+    print("Averaged Confusion Matrix:")
+    print(avg_cm)
+    print(f"\nAverage Accuracy over {k} folds: {avg_accuracy:.2f}")
+
+def traintestsplitmethod(n_rounds=100):
+    accuracy_scores = 0
+    aggregate_cm = np.zeros((4, 4)) # 4x4 confusion matrix
+
+    for i in range(n_rounds):
+        X_train, X_test, y_train, y_test = train_test_split(df.review, df.label, test_size=0.1, shuffle=True, random_state=i)
+        pipeline.fit(X_train, y_train)
+        y_pred = pipeline.predict(X_test)
+        cm = confusion_matrix(y_test, y_pred)
+        clf_accuracy = accuracy_score(y_test, y_pred)
+        accuracy_scores += clf_accuracy
+        aggregate_cm += cm
+        print("Round: ", i, " Accuracy: ", clf_accuracy)
+
+    avg_cm = aggregate_cm / n_rounds
+    print("Averaged Confusion Matrix:")
+    print(avg_cm)
+    print("Accuracy: ", accuracy_scores / n_rounds)
+
+def evaluate_file(filename,fileout):
+    # Training the classifier on entire training data
+    pipeline.fit(df.review, df.label)
+
+    # Loading and preprocessing the new reviews
+    with open(filename, 'r') as file:
+        new_reviews = [pipeline.named_steps['preprocessor'].remove_hotels(line.strip()) for line in file]
+        new_reviews = [pipeline.named_steps['preprocessor'].remove_stop_words(line) for line in new_reviews]
+
+    # Predicting the labels for the new reviews
+    predicted_labels = pipeline.predict(pd.Series(new_reviews))
+    inv_mapping = {v: k for k, v in mapping.items()}
+    predicted_str_labels = [inv_mapping[label] for label in predicted_labels]
+
+    # Writing the predicted labels to a new text file
+    with open(fileout, 'w') as file:
+        for label in predicted_str_labels:
+            file.write(label + '\n')
+
+if __name__ == "__main__":
+    #crossValidation()
+    traintestsplitmethod()
+    #evaluate_file("proj2/test_just_reviews.txt","proj2/results.txt")
